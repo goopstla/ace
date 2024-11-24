@@ -11,10 +11,9 @@ from turret2 import Turret2
 from button import Button
 import constants as c
 from farm import Farm
-
+from menu import Menu
 
 #step motor setup
-
 #gpio setup
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
@@ -109,6 +108,15 @@ clock = pg.time.Clock()
 screen = pg.display.set_mode((c.SCREEN_WIDTH + c.SIDE_PANEL, c.SCREEN_HEIGHT))
 pg.display.set_caption("Tower Defense")
 
+# Load the main menu
+menu = Menu()
+
+# Run the main menu
+# Load the main menu
+menu = Menu()
+
+# Run the main menu
+menu.run(screen)
 #game variables
 game_over = False
 game_outcome = 0 # -1 is loss & 1 is win
@@ -282,6 +290,20 @@ world = World(world_data, map_image)
 world.process_data()
 world.process_enemies()
 
+# Initialize previous_health after world is created
+previous_health = world.health
+
+# Function to light up the entire NeoPixel strip in a specific color
+def light_up_strip(color):
+    for i in range(neopixel_main.n):
+        neopixel_main[i] = color  # Set each LED to the specified color
+    neopixel_main.show()  # Update the strip
+
+# Function to clear all LEDs
+def cleanup_leds():
+    neopixel_main.fill((0, 0, 0))
+    neopixel_main.show()
+
 #create groups
 enemy_group = pg.sprite.Group()
 turret_group = pg.sprite.Group()
@@ -311,7 +333,6 @@ fast_forward_button = Button(c.SCREEN_WIDTH + 50, 300, fast_forward_image, False
 #game loop
 run = True
 while run:
-
   clock.tick(c.FPS)
 
   #########################
@@ -323,10 +344,17 @@ while run:
     if world.health <= 0:
       game_over = True
       game_outcome = -1 #loss
+    if world.health < previous_health:  # Check if health has decreased
+            light_up_strip((150, 0, 0))  # Light up the strip in red
+            time.sleep(1)  # Keep it red for a second
+            cleanup_leds()  # Clear the LEDs after a moment
     #check if player has won
-    if world.level > c.TOTAL_LEVELS:
+    elif world.level > c.TOTAL_LEVELS:
       game_over = True
       game_outcome = 1 #win
+
+        # Update previous health
+      previous_health = world.health
 
     #update groups
     enemy_group.update(world)
@@ -353,9 +381,6 @@ while run:
   #draw level
   world.draw(screen)
   
-  # draw enemy path
-  pg.draw.lines(screen, "grey0", False, waypoints)
-
   #draw groups
   enemy_group.draw(screen)
   for turret in turret_group:
