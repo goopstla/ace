@@ -1,18 +1,18 @@
 FARM_DATA = [
   {
     #1
-    "cooldown": 1200,
+    "cooldown": 20000,  # 20 seconds
   },
   {
     #2
-    "cooldown": 1000,
+    "cooldown": 18000,  # 18 seconds
   },
   {
     #3
-    "cooldown": 800,
+    "cooldown": 16000,  # 16 seconds
   },
   {
     #4
-    "interval": 600,
+    "cooldown": 15000,  # 15 seconds
   }
 ]

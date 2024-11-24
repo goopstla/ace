@@ -12,11 +12,12 @@ class World():
     self.tile_map = []
     self.waypoints = []
     self.level_data = data
-    self.image = map_image  
+    self.image = map_image
     self.enemy_list = []
     self.spawned_enemies = 0
     self.killed_enemies = 0
     self.missed_enemies = 0
+
   def process_data(self):
     #look through data to extract relevant info
     for layer in self.level_data["layers"]:
@@ -33,6 +34,7 @@ class World():
       temp_x = point.get("x")
       temp_y = point.get("y")
       self.waypoints.append((temp_x, temp_y))
+      
 
   def process_enemies(self):
     enemies = ENEMY_SPAWN_DATA[self.level - 1]
