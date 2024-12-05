@@ -134,13 +134,13 @@ selected_farm = None
 map_image = pg.image.load('levels/level.png').convert_alpha()
 #individual turret image for mouse cursor
 cursor_turret = pg.image.load('assets/images/turrets/ribosome.png').convert_alpha()
-cursor_turret = pg.transform.scale(cursor_turret, (40, 40))
+cursor_turret = pg.transform.scale(cursor_turret, (50, 50))
 # cursor turret2
 cursor_turret2 = pg.image.load('assets/images/turrets/nucleoid.png').convert_alpha()
-cursor_turret2 = pg.transform.scale(cursor_turret2, (105, 105))
+cursor_turret2 = pg.transform.scale(cursor_turret2, (50, 50))
 #individual turret image for mouse cursor
 cursor_farm = pg.image.load('assets/images/turrets/plasmid.png').convert_alpha()
-cursor_farm = pg.transform.scale(cursor_farm, (30, 30))
+cursor_farm = pg.transform.scale(cursor_farm, (50, 50))
 
 #enemies
 image_size = (64, 64)  # Example size, adjust as needed
@@ -155,7 +155,7 @@ enemy_images = {
 buy_turret_image = pg.image.load('assets/images/turrets/ribosome_moneyover.png').convert_alpha()
 buy_turret_image = pg.transform.scale(buy_turret_image, (50, 50))
 buy_turret2_image = pg.image.load('assets/images/turrets/nucleoid_moneyover.png').convert_alpha()
-buy_turret2_image = pg.transform.scale(buy_turret2_image, (60, 30))
+buy_turret2_image = pg.transform.scale(buy_turret2_image, (50, 50))
 buy_farm_image = pg.image.load('assets/images/turrets/plasmid_moneyover.png').convert_alpha()
 buy_farm_image = pg.transform.scale(buy_farm_image, (50, 50))
 cancel_image = pg.image.load('assets/images/buttons/cancel.png').convert_alpha()
@@ -216,12 +216,16 @@ def create_turret(mouse_pos):
       turret_group.add(new_turret)
       #deduct cost of turret
       world.money -= c.BUY_COST
+      # Light up the NeoPixel strip in blue
+      light_up_strip((0, 0, 150))  # Blue color
   
 def select_turret(mouse_pos):
   mouse_tile_x = mouse_pos[0] // c.TILE_SIZE
   mouse_tile_y = mouse_pos[1] // c.TILE_SIZE
   for turret in turret_group:
     if (mouse_tile_x, mouse_tile_y) == (turret.tile_x, turret.tile_y):
+      # Light up the NeoPixel strip in blue
+      light_up_strip((0, 0, 150))  # Blue color
       return turret
 
 # turret2 creation
@@ -243,12 +247,16 @@ def create_turret2(mouse_pos):
       turret_group2.add(new_turret2)
       #deduct cost of turret
       world.money -= c.BUY_COST2
+      # Light up the NeoPixel strip in brown
+    light_up_strip((139, 69, 19))  # Brown color
   
 def select_turret2(mouse_pos):
   mouse_tile_x = mouse_pos[0] // c.TILE_SIZE
   mouse_tile_y = mouse_pos[1] // c.TILE_SIZE
   for turret2 in turret_group2:
     if (mouse_tile_x, mouse_tile_y) == (turret2.tile_x, turret2.tile_y):
+      # Light up the NeoPixel strip in brown
+      light_up_strip((139, 69, 19))  # Brown color
       return turret2
 
 
@@ -271,12 +279,16 @@ def create_farm(mouse_pos):
       farm_group.add(new_farm)
       #deduct cost of turret
       world.money -= c.FARM_COST
+      # Light up the NeoPixel strip in purple
+      light_up_strip((128, 0, 128))  # Purple color
 
 def select_farm(mouse_pos):
     mouse_tile_x = mouse_pos[0] // c.TILE_SIZE
     mouse_tile_y = mouse_pos[1] // c.TILE_SIZE
     for farm in farm_group:
         if (mouse_tile_x, mouse_tile_y) == (farm.tile_x, farm.tile_y):
+          # Light up the NeoPixel strip in purple
+            light_up_strip((128, 0, 128))  # Purple color
             return farm
 
 def clear_selection():
@@ -322,8 +334,8 @@ waypoints = [
 ]
 
 #create buttons
-turret_button = Button(c.SCREEN_WIDTH + 40, 134, buy_turret_image, True)
-turret2_button = Button(c.SCREEN_WIDTH + 100, 145, buy_turret2_image, True)
+turret_button = Button(c.SCREEN_WIDTH + 40, 135, buy_turret_image, True)
+turret2_button = Button(c.SCREEN_WIDTH + 100, 135, buy_turret2_image, True)
 farm_button = Button(c.SCREEN_WIDTH + 160, 135, buy_farm_image, True)
 upgrade_button = Button(c.SCREEN_WIDTH + 5, 200, upgrade_turret_image, True)
 begin_button = Button(c.SCREEN_WIDTH + 60, 300, begin_image, True)

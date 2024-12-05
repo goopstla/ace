@@ -21,13 +21,13 @@ class Turret2(pg.sprite.Sprite):
         self.tile_y = tile_y
         # Calculate center coordinates
         self.x = (self.tile_x + 0.5) * c.TILE_SIZE
-        self.y = (self.tile_y + 0.5) * c.TILE_SIZE
+        self.y = (self.tile_y - 0.3) * c.TILE_SIZE
         # Shot sound effect
         self.shot_fx = shot_fx
 
         # Load and transform image
         self.image = pg.image.load('assets/images/turrets/nucleoid.png').convert_alpha()
-        self.image = pg.transform.scale(self.image, (100, 100))
+        self.image = pg.transform.scale(self.image, (40, 40))
         self.original_image = self.image  # Keep a reference to the original image
         self.rect = self.image.get_rect(center=(self.x, self.y))
 

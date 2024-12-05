@@ -1,59 +1,83 @@
 import pygame as pg
+import math
 import constants as c
-from world import World
-from farm_data import FARM_DATA
+from turret2_data import TURRET2_DATA
 
-class Farm(pg.sprite.Sprite):
-    def __init__(self, tile_x, tile_y, money_per_interval=100):
-        super().__init__()  # Call the Sprite constructor
+class Turret2(pg.sprite.Sprite):
+    def __init__(self, tile_x, tile_y, shot_fx):
+        pg.sprite.Sprite.__init__(self)
         self.upgrade_level = 1
-        self.cooldown = FARM_DATA[self.upgrade_level - 1].get("cooldown")
-        self.last_generation = pg.time.get_ticks()
+        self.range = TURRET2_DATA[self.upgrade_level - 1].get("range") 
+        self.cooldown = TURRET2_DATA[self.upgrade_level - 1].get("cooldown")
+        self.last_shot = pg.time.get_ticks()
         self.selected = False
+        self.target = None
+
+        # Initialize the angle
+        self.angle = 90  # Default angle
 
         # Position variables
         self.tile_x = tile_x
         self.tile_y = tile_y
         # Calculate center coordinates
         self.x = (self.tile_x + 0.5) * c.TILE_SIZE
-        self.y = (self.tile_y + 0.5) * c.TILE_SIZE
-        
-        # Money generation attributes
-        self.money_per_interval = money_per_interval
-        self.last_money_generated_time = pg.time.get_ticks()
-        self.money = 0  # money attribute
+        self.y = (self.tile_y - 0.3) * c.TILE_SIZE
+        # Shot sound effect
+        self.shot_fx = shot_fx
 
-        # Load the farm image (make sure the path is correct)
-        self.image = pg.image.load('assets/images/turrets/plasmid.png').convert_alpha()  # Adjust the path as needed
-        self.image = pg.transform.scale(self.image, (400, 400))
-        
-        # Scale the image and assign it back to self.image
-        self.image = pg.transform.scale(self.image, (30, 30))  # Resize the image to 65x65 pixels
-        self.rect = self.image.get_rect(center=(self.x, self.y))  # Set the rect position
+        # Load and transform image
+        self.image = pg.image.load('assets/images/turrets/nucleoid.png').convert_alpha()
+        self.image = pg.transform.scale(self.image, (40, 40))
+        self.original_image = self.image  # Keep a reference to the original image
+        self.rect = self.image.get_rect(center=(self.x, self.y))
 
-    def update(self, game):
-        # Handle money generation based on cooldown
-        current_time = pg.time.get_ticks()
-        if current_time - self.last_money_generated_time >= self.cooldown:
-            self.generate_money(game)  # Pass the game/world instance
-            self.last_money_generated_time = current_time
+        # Create transparent circle showing range
+        self.range_image = pg.Surface((self.range * 2, self.range * 2))
+        self.range_image.fill((0, 0, 0))
+        self.range_image.set_colorkey((0, 0, 0))
+        pg.draw.circle(self.range_image, "grey100", (self.range, self.range), self.range)
+        self.range_image.set_alpha(100)
+        self.range_rect = self.range_image.get_rect(center=self.rect.center)
+
+    def update(self, enemy_group, world):
+        # Search for new target once turret has cooled down
+        if pg.time.get_ticks() - self.last_shot > (self.cooldown / world.game_speed):
+            self.pick_target(enemy_group)
+
+    def pick_target(self, enemy_group):
+        # Find an enemy to target
+        for enemy in enemy_group:
+            if enemy.health > 0:
+                x_dist = enemy.pos[0] - self.x
+                y_dist = enemy.pos[1] - self.y
+                dist = math.sqrt(x_dist ** 2 + y_dist ** 2)
+                if dist < self.range:
+                    self.target = enemy
+                    self.angle = math.degrees(math.atan2(-y_dist, x_dist))  # Update angle based on target
+                    # Damage enemy
+                    self.target.health -= c.DAMAGE2
+                    # Play sound effect
+                    self.shot_fx.play()
+                    self.last_shot = pg.time.get_ticks()  # Reset last shot time
+                    break
 
     def upgrade(self):
-        if self.upgrade_level < len(FARM_DATA):  # Ensure we don't exceed the available upgrades
-            self.upgrade_level += 1
-            self.cooldown = FARM_DATA[self.upgrade_level - 1].get("cooldown")  # Update cooldown based on new level
+        self.upgrade_level += 1
+        self.range = TURRET2_DATA[self.upgrade_level - 1].get("range")
+        self.cooldown = TURRET2_DATA[self.upgrade_level - 1].get("cooldown")
+
+        # Upgrade range circle
+        self.range_image = pg.Surface((self.range * 2, self.range * 2))
+        self.range_image.fill((0, 0, 0))
+        self.range_image.set_colorkey((0, 0, 0))
+        pg.draw.circle(self.range_image, "grey100", (self.range, self.range), self.range)
+        self.range_image.set_alpha(100)
+        self.range_rect = self.range_image.get_rect(center=self.rect.center)
 
     def draw(self, surface):
-        surface.blit(self.image, self.rect)
-
-    def generate_money(self, world):
-        world.money += self.money_per_interval  # Increment the world money
-        print(f"Money generated: {self.money_per_interval}. Total money: {world.money}")
-        
-        # Assuming you want to add the generated money to the game world
-        # You may need to adjust this according to your game's architecture
-        # For example, if you have a method in the game world to add money:
-        # game.add_money(self.money_per_interval)
-
-    def get_money(self):
-        return self.money
+        # Rotate the turret image based on the angle
+        rotated_image = pg.transform.rotate(self.original_image, -self.angle + 90)  # Adjust for correct orientation
+        self.rect = rotated_image.get_rect(center=(self.x, self.y))  # Update the rect to the new rotated image
+        surface.blit(rotated_image, self.rect)
+        if self.selected:
+            surface.blit(self.range_image, self.range_rect)
